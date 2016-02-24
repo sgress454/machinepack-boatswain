@@ -58,6 +58,8 @@ module.exports = {
 
 
   fn: function(inputs, exits) {
+
+    var async = require('async');
     var _ = require('lodash');
 
     if (inputs.ignoreUsers.indexOf(inputs.event.sender.login) > -1) {

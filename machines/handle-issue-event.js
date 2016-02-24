@@ -50,6 +50,9 @@ module.exports = {
 
   fn: function(inputs, exits) {
 
+    var async = require('async');
+    var _ = require('lodash');
+
     switch(inputs.event.action) {
       case 'opened':
         // Run new issues through the new issue validator

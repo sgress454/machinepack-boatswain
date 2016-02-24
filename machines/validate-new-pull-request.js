@@ -69,6 +69,10 @@ module.exports = {
 
 
   fn: function(inputs, exits) {
+
+    var async = require('async');
+    var _ = require('lodash');
+    
     var Http = require('machinepack-http');
     // Get the repo
     var repo = inputs.repo;
