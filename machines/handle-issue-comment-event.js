@@ -59,7 +59,8 @@ module.exports = {
 
   fn: function(inputs, exits) {
     var _ = require('lodash');
-    if (inputs.ignoreUsers.indexOf(inputs.event.issue.user.login) > -1) {
+
+    if (inputs.ignoreUsers.indexOf(inputs.event.sender.login) > -1) {
       return exits.success();
     }
     // If the issue is open and has the "Waiting to close" label,
