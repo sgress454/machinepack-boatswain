@@ -63,35 +63,52 @@ module.exports = {
     if (inputs.ignoreUsers.indexOf(inputs.event.sender.login) > -1) {
       return exits.success();
     }
-    // If the issue is open and has the "Waiting to close" label,
-    // then remove that label
-    if (inputs.event.issue.state == 'open' && _.find(inputs.event.issue.labels, {name: inputs.gracePeriodLabel})) {
-      return require('machinepack-github').removeLabelFromIssue({
-        owner: inputs.event.repository.owner.login,
-        repo: inputs.event.repository.name,
-        issueNumber: inputs.event.issue.number,
-        label: inputs.gracePeriodLabel,
-        credentials: inputs.credentials
-      }).exec({
-        error: function(err) {
-          return exits.error(err);
-        },
-        success: function(err) {
-          exits.success();
-        }
-      });
+
+    if (inputs.event.issue.pull_request) {
+      // If the PR is closed and has the "Needs cleanup" label,
+      // then re-validate the initial comment
+      if (inputs.event.issue.state == 'closed' && _.find(inputs.event.issue.labels, {name: inputs.cleanupIssueLabel})) {
+        return require('../').validateNewPullRequest({
+          repo: inputs.event.repository,
+          pr: inputs.event.issue,
+          credentials: inputs.credentials,
+          cleanupIssueLabel: inputs.cleanupIssueLabel
+        }).exec(exits);
+      }
     }
-    // If the issue is closed and has the "Needs cleanup" label,
-    // then re-validate the initial comment
-    if (inputs.event.issue.state == 'closed' && _.find(inputs.event.issue.labels, {name: inputs.cleanupIssueLabel})) {
-      return require('../').validateNewIssue({
-        repo: inputs.event.repository,
-        issue: inputs.event.issue,
-        credentials: inputs.credentials,
-        cleanupIssueLabel: inputs.cleanupIssueLabel
-      }).exec(exits);
+
+    else {
+      // If the issue is open and has the "Waiting to close" label,
+      // then remove that label
+      if (inputs.event.issue.state == 'open' && _.find(inputs.event.issue.labels, {name: inputs.gracePeriodLabel})) {
+        return require('machinepack-github').removeLabelFromIssue({
+          owner: inputs.event.repository.owner.login,
+          repo: inputs.event.repository.name,
+          issueNumber: inputs.event.issue.number,
+          label: inputs.gracePeriodLabel,
+          credentials: inputs.credentials
+        }).exec({
+          error: function(err) {
+            return exits.error(err);
+          },
+          success: function(err) {
+            exits.success();
+          }
+        });
+      }
+      // If the issue is closed and has the "Needs cleanup" label,
+      // then re-validate the initial comment
+      if (inputs.event.issue.state == 'closed' && _.find(inputs.event.issue.labels, {name: inputs.cleanupIssueLabel})) {
+        return require('../').validateNewIssue({
+          repo: inputs.event.repository,
+          issue: inputs.event.issue,
+          credentials: inputs.credentials,
+          cleanupIssueLabel: inputs.cleanupIssueLabel
+        }).exec(exits);
+      }
+      return exits.success();
     }
-    return exits.success();
+
   },
 
 };
