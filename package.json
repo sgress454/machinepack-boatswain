@@ -23,7 +23,9 @@
       "when-new-issue-is-posted",
       "validate-new-issue",
       "handle-issue-event",
-      "handle-issue-comment-event"
+      "handle-issue-comment-event",
+      "handle-pull-request-event",
+      "validate-new-pull-request"
     ],
     "machineDir": "machines/"
   }
