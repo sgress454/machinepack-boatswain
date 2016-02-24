@@ -20,7 +20,6 @@
     "machines": [
       "close-non-bugs",
       "close-some-stale-issues",
-      "when-new-issue-is-posted",
       "validate-new-issue",
       "handle-issue-event",
       "handle-issue-comment-event",
