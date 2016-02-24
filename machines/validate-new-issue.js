@@ -135,7 +135,7 @@ module.exports = {
                 repo: repo.name,
                 issueNumber: issue.number,
                 labels: [inputs.cleanupIssueLabel],
-                credentials: {"accessToken":"49728f283a1f56ce8365a7422c39176677e4140c"}
+                credentials: inputs.credentials
               }).exec(cb);
             },
             addComment: function(cb) {
@@ -144,7 +144,7 @@ module.exports = {
                 owner: repo.owner.login,
                 repo: repo.name,
                 issueNumber: issue.number,
-                credentials: {"accessToken":"49728f283a1f56ce8365a7422c39176677e4140c"}
+                credentials: inputs.credentials
               }).exec(cb);
             },
             closeIssue: ['addLabel', 'addComment', function(cb) {
@@ -152,7 +152,7 @@ module.exports = {
                 owner: repo.owner.login,
                 repo: repo.name,
                 issueNumber: issue.number,
-                credentials: {"accessToken":"49728f283a1f56ce8365a7422c39176677e4140c"}
+                credentials: inputs.credentials
               }).exec(cb);
             }]
           }, function(err) {
@@ -170,7 +170,7 @@ module.exports = {
                 repo: repo.name,
                 issueNumber: issue.number,
                 label: inputs.cleanupIssueLabel,
-                credentials: {"accessToken":"49728f283a1f56ce8365a7422c39176677e4140c"}
+                credentials: inputs.credentials
               }).exec(cb);
             },
             openIssue: function(cb) {
@@ -178,7 +178,7 @@ module.exports = {
                 owner: repo.owner.login,
                 repo: repo.name,
                 issueNumber: issue.number,
-                credentials: {"accessToken":"49728f283a1f56ce8365a7422c39176677e4140c"}
+                credentials: inputs.credentials
               }).exec(cb);
             }
           }, function(err) {
