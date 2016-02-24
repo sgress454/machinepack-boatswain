@@ -11,15 +11,17 @@
   "dependencies": {
     "async": "^1.4.2",
     "lodash": "^3.10.1",
-    "machine": "^10.3.1",
-    "machinepack-github": "^4.2.0"
+    "machine": "^11.0.3",
+    "machinepack-github": "^4.2.0",
+    "machinepack-http": "^2.4.0"
   },
   "machinepack": {
     "friendlyName": "Boatswain",
     "machines": [
       "close-non-bugs",
       "close-some-stale-issues",
-      "when-new-issue-is-posted"
+      "when-new-issue-is-posted",
+      "validate-new-issue",
     ],
     "machineDir": "machines/"
   }
