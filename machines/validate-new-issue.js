@@ -114,8 +114,19 @@ module.exports = {
         });
 
         var missingVersionInfo = [];
+        var versionInfo = (function() {
+          var items = [];
+          var match = issueTemplate.match(/### BEGIN VERSION INFO ###([^]+)### END VERSION INFO ###/);
+          if (!match || !match[1]) {return [];}                      
+          var regex = /\*\*(.+)\*\*/g;
+          var item;
+          while ((item = regex.exec(match[1]))) {
+            items.push(item[1]);
+          }
+          return items;
+        })();
         // Now, verify that we have all the version info
-        ['Sails version', 'Node version', 'NPM version', 'Operating system'].forEach(function(version) {
+        versionInfo.forEach(function(version) {
           if (!(new RegExp('^\\*\\*'+version+'\\*\\*:[^\\S\\n]*(\\S+).*$','m')).exec(issue.body)) {
             missingVersionInfo.push(version);
           }
