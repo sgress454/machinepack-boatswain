@@ -82,7 +82,7 @@ module.exports = {
     // Get the new issue
     var issue = inputs.issue;
     // Get the issue template
-    var issueTemplateUrl = "https://raw.githubusercontent.com/"+repo.owner.login+"/"+repo.name+"/master/.github/ISSUE_TEMPLATE.md";
+    var issueTemplateUrl = "https://raw.githubusercontent.com/"+repo.owner.login+"/"+repo.name+"/master/.github/ISSUE_TEMPLATE";
 
     Http.fetchWebpageHtml({url: issueTemplateUrl}).exec({
       // If there's no issue template, then there's no way to validate the issue, so let it pass
