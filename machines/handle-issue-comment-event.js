@@ -41,7 +41,8 @@ module.exports = {
     ignoreUsers: {
       friendlyName: 'Ignore users',
       description: 'List of users to ignore comments from',
-      example: ['sailsbot']
+      example: ['sailsbot'],
+      defaultsTo: []
     }
 
   },
