@@ -77,6 +77,7 @@ module.exports = {
     var _ = require('lodash');
 
     var Http = require('machinepack-http');
+    var helpers = require('../helpers');
     // Get the repo
     var repo = inputs.repo;
     // Get the new issue
@@ -99,6 +100,16 @@ module.exports = {
         // If there's no pledge in the issue template, there's no way to validate the issue,
         // so let it pass
         if (!pledge) {return exits.success();}
+
+        // If the pledge blockis missing completely from the new issue comment, 
+        // let the user know they need to put it back
+        if (!(function(){
+          var match = issue.body.match(/### BEGIN PLEDGE ###([^]+)### END PLEDGE ###/);
+          if (!match || !match[1]) {return false;}
+          return true;
+        }())) {
+          return helpers.handleBrokenIssueComment(inputs).exec(exits);
+        }
         
         var missingActionItems = [];
         // Split the pledge up into action items
@@ -125,6 +136,16 @@ module.exports = {
           }
           return items;
         })();
+
+        // If the version info block is missing completely from the new issue comment, 
+        // let the user know they need to put it back        
+        if (versionInfo.length && !(function(){
+          var match = issue.body.match(/### BEGIN VERSION INFO ###([^]+)### END VERSION INFO ###/);
+          if (!match || !match[1]) {return false;}
+          return true;
+        }())) {
+          return helpers.handleBrokenIssueComment(inputs).exec(exits);
+        }
         // Now, verify that we have all the version info
         versionInfo.forEach(function(version) {
           if (!(new RegExp('^\\*\\*'+version+'\\*\\*:[^\\S\\n]*(\\S+).*$','m')).exec(issue.body)) {
