@@ -100,8 +100,8 @@ module.exports = {
         });
       }
       // If the issue is closed and has the "Needs cleanup" label,
-      // then re-validate the initial comment
-      if (inputs.event.issue.state == 'closed' && _.find(inputs.event.issue.labels, {name: inputs.cleanupIssueLabel})) {
+      // and the comment is from the author, then re-validate the initial comment
+      if (inputs.event.issue.state == 'closed' && _.find(inputs.event.issue.labels, {name: inputs.cleanupIssueLabel}) && inputs.event.issue.user.login == inputs.event.comment.user.login) {
         return require('../').validateNewIssue({
           repo: inputs.event.repository,
           issue: inputs.event.issue,
