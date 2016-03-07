@@ -156,14 +156,22 @@ module.exports = {
         // If there's any missing items, post a comment with details, add the "cleanup" label
         // and close the issue
         if (missingVersionInfo.length || missingActionItems.length) {
-          var comment = 'Hi @' + issue.user.login+'!  It looks like you didn&rsquo;t follow the instructions fully when you created your issue.  Please edit your comment (use the pencil icon at the top-right corner of the comment box) and fix the following issues:\n\n';
-          missingVersionInfo.forEach(function(missingVersionItem) {
-            comment += '* Provide your '+missingVersionItem+'\n';
-          });
-          missingActionItems.forEach(function(missingActionItem) {
-            comment += '* Verify "'+missingActionItem.substr(6)+'"\n';
-          });
-          comment += "\nAs soon as those items are rectified, post a new comment (e.g. &ldquo;Ok, fixed!&rdquo;) below and we'll re-open this issue.  Thanks!";
+          var comment;
+          // If the issue is already labeled "needs cleanup", post a shorter, sweeter message
+          if (_.find(issue.labels, {name: inputs.cleanupIssueLabel})) {
+            comment = 'Sorry to be a hassle, but it looks like your issue is still missing some required info.  Please double-check your initial comment and try again.\n\n';
+          }
+          else {
+            comment = 'Hi @' + issue.user.login+'!  It looks like you didn&rsquo;t follow the instructions fully when you created your issue.  Please edit your comment (use the pencil icon at the top-right corner of the comment box) and fix the following issues:\n\n';
+            missingVersionInfo.forEach(function(missingVersionItem) {
+              comment += '* Provide your '+missingVersionItem+'\n';
+            });
+            missingActionItems.forEach(function(missingActionItem) {
+              comment += '* Verify "'+missingActionItem.substr(6)+'"\n';
+            });
+            comment += "\nAs soon as those items are rectified, post a new comment (e.g. &ldquo;Ok, fixed!&rdquo;) below and we'll re-open this issue.  Thanks!\n\n";
+          }
+          comment += '*If you feel this message is in error, or you want to debate the merits of my existence (sniffle), please contact inquiries@treeline.io.*';
           return async.auto({
             addLabel: function(cb) {
               require('machinepack-github').addLabelsToIssue({
