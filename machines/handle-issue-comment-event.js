@@ -68,9 +68,9 @@ module.exports = {
     }
 
     if (inputs.event.issue.pull_request) {
-      // If the PR is closed and has the "Needs cleanup" label,
+      // If the PR has the "Needs cleanup" label,
       // then re-validate the initial comment
-      if (inputs.event.issue.state == 'closed' && _.find(inputs.event.issue.labels, {name: inputs.cleanupIssueLabel})) {
+      if (_.find(inputs.event.issue.labels, {name: inputs.cleanupIssueLabel})) {
         return require('../').validateNewPullRequest({
           repo: inputs.event.repository,
           pr: inputs.event.issue,
@@ -99,9 +99,9 @@ module.exports = {
           }
         });
       }
-      // If the issue is closed and has the "Needs cleanup" label,
+      // If the issue has the "Needs cleanup" label,
       // and the comment is from the author, then re-validate the initial comment
-      if (inputs.event.issue.state == 'closed' && _.find(inputs.event.issue.labels, {name: inputs.cleanupIssueLabel}) && inputs.event.issue.user.login == inputs.event.comment.user.login) {
+      if (_.find(inputs.event.issue.labels, {name: inputs.cleanupIssueLabel}) && inputs.event.issue.user.login == inputs.event.comment.user.login) {
         return require('../').validateNewIssue({
           repo: inputs.event.repository,
           issue: inputs.event.issue,

@@ -51,7 +51,13 @@ module.exports = {
       extendedDescription: 'If this label is applied, then subsequent comments should trigger a webhook that will re-examine the title for compliance with the repo\'s guidelines',
       example: 'Needs cleanup',
       defaultsTo: 'Needs cleanup'      
-    },                
+    },         
+    closeDirtyPRs: {
+      friendlyName: 'Close dirty pull request',
+      description: 'If `true`, pull requests not conforming to the instructions will be closed.',
+      example: true,
+      defaultsTo: false
+    }            
   },
 
 
@@ -103,6 +109,7 @@ module.exports = {
           }).exec(cb);
         },
         closeIssue: ['addLabel', 'addComment', function(cb) {
+          if (!inputs.closeDirtyPRs) {return cb();}
           require('machinepack-github').closeIssue({
             owner: repo.owner.login,
             repo: repo.name,
@@ -116,7 +123,7 @@ module.exports = {
       });
     }
 
-    if (pr.state == 'closed' && _.find(pr.labels, {name: inputs.cleanupPRLabel})) {
+    if (_.find(pr.labels, {name: inputs.cleanupPRLabel})) {
       // Otherwise make sure the issue is opened and the "cleanup" label is removed
       return async.auto({
         removeLabel: function(cb) {
