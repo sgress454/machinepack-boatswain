@@ -68,6 +68,7 @@ module.exports = {
   },
 
   fn: function(inputs, exits) {
+    var async = require('async');
     var issue = inputs.issue;
     var repo = inputs.repo;
     var comment = 'Hi @' + issue.user.login+'!  It looks like you may have removed some required elements from the initial comment template, without which I can\'t verify that this post meets our [contribution guidelines](http://bit.ly/sails-issue-guide). ';
