@@ -33,8 +33,14 @@ module.exports = {
       description: 'Label to use to indicate that an issue needs to have its initial comment cleaned up',
       extendedDescription: 'If this label is applied, then subsequent comments should trigger a webhook that will re-examine the initial comment for compliance with the repo\'s issue template (if any)',
       example: 'Needs cleanup',
-      defaultsTo: 'Needs cleanup'      
-    },                
+      defaultsTo: 'Needs cleanup'
+    },
+    closeDirtyIssues: {
+      friendlyName: 'Close dirty issues',
+      description: 'If `true`, issues not conforming to the template will be closed.',
+      example: true,
+      defaultsTo: false
+    }
   },
 
 
@@ -60,7 +66,8 @@ module.exports = {
           repo: inputs.event.repository,
           issue: inputs.event.issue,
           credentials: inputs.credentials,
-          cleanupIssueLabel: inputs.cleanupIssueLabel
+          cleanupIssueLabel: inputs.cleanupIssueLabel,
+          closeDirtyIssues: inputs.closeDirtyIssues
         }).exec(exits);
         break;
       default:

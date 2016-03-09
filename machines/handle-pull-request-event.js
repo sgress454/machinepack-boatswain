@@ -33,8 +33,14 @@ module.exports = {
       description: 'Label to use to indicate that a pull request needs to have its title cleaned up',
       extendedDescription: 'If this label is applied, then subsequent comments should trigger a webhook that will re-examine the title for compliance with the repo\'s guidelines',
       example: 'Needs cleanup',
-      defaultsTo: 'Needs cleanup'      
-    },                
+      defaultsTo: 'Needs cleanup'
+    },
+    closeDirtyPRs: {
+      friendlyName: 'Close dirty pull request',
+      description: 'If `true`, pull requests not conforming to the instructions will be closed.',
+      example: true,
+      defaultsTo: false
+    }
   },
 
 
@@ -60,7 +66,8 @@ module.exports = {
           repo: inputs.event.repository,
           pr: _.extend(inputs.event.pull_request, {labels: []}),
           credentials: inputs.credentials,
-          cleanupPRLabel: inputs.cleanupPRLabel
+          cleanupPRLabel: inputs.cleanupPRLabel,
+          closeDirtyPRs: inputs.closeDirtyPRs
         }).exec(exits);
         break;
       default:

@@ -30,19 +30,38 @@ module.exports = {
       description: 'Label to use to indicate that an issue needs to have its initial comment cleaned up',
       extendedDescription: 'If this label is applied, then subsequent comments should trigger a webhook that will re-examine the initial comment for compliance with the repo\'s issue template (if any)',
       example: 'Needs cleanup',
-      defaultsTo: 'Needs cleanup'      
-    },        
+      defaultsTo: 'Needs cleanup'
+    },
+    cleanupPRLabel: {
+      friendlyName: 'Cleanup pull request label',
+      description: 'Label to use to indicate that a pull request needs to have its title cleaned up',
+      extendedDescription: 'If this label is applied, then subsequent comments should trigger a webhook that will re-examine the title for compliance with the repo\'s guidelines',
+      example: 'Needs cleanup',
+      defaultsTo: 'Needs cleanup'
+    },
     gracePeriodLabel: {
       friendlyName: 'Grace period label',
       description: 'Label to use to indicate that an issue is in its grace period and will be closed soon',
       example: 'Waiting to close',
-      defaultsTo: 'Waiting to close'      
+      defaultsTo: 'Waiting to close'
     },
     ignoreUsers: {
       friendlyName: 'Ignore users',
       description: 'List of users to ignore comments from',
       example: ['sailsbot'],
       defaultsTo: []
+    },
+    closeDirtyIssues: {
+      friendlyName: 'Close dirty issues',
+      description: 'If `true`, issues not conforming to the template will be closed.',
+      example: true,
+      defaultsTo: false
+    },
+    closeDirtyPRs: {
+      friendlyName: 'Close dirty pull request',
+      description: 'If `true`, pull requests not conforming to the instructions will be closed.',
+      example: true,
+      defaultsTo: false
     }
 
   },
@@ -70,12 +89,13 @@ module.exports = {
     if (inputs.event.issue.pull_request) {
       // If the PR has the "Needs cleanup" label,
       // then re-validate the initial comment
-      if (_.find(inputs.event.issue.labels, {name: inputs.cleanupIssueLabel})) {
+      if (_.find(inputs.event.issue.labels, {name: inputs.cleanupPRLabel}) && inputs.event.issue.user.login == inputs.event.comment.user.login) {
         return require('../').validateNewPullRequest({
           repo: inputs.event.repository,
           pr: inputs.event.issue,
           credentials: inputs.credentials,
-          cleanupIssueLabel: inputs.cleanupIssueLabel
+          cleanupPRLabel: inputs.cleanupPRLabel,
+          closeDirtyPRs: inputs.closeDirtyPRs
         }).exec(exits);
       }
     }
@@ -106,7 +126,8 @@ module.exports = {
           repo: inputs.event.repository,
           issue: inputs.event.issue,
           credentials: inputs.credentials,
-          cleanupIssueLabel: inputs.cleanupIssueLabel
+          cleanupIssueLabel: inputs.cleanupIssueLabel,
+          closeDirtyIssues: inputs.closeDirtyIssues
         }).exec(exits);
       }
       return exits.success();
