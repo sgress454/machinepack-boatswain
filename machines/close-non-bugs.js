@@ -92,10 +92,10 @@ module.exports = {
                 inputs.repos.push(repo);
                 var delay = (reset * 1000) - ((new Date()).getTime());
                 console.log("Hit rate limit; pausing until", new Date(reset * 1000), "(" + delay + ")");
-                return setTimeout(done, delay);
+                return setTimeout(nextRepo, delay);
               } catch(e) {
                 console.log(e);
-                return done();
+                return nextRepo();
               }
             }            
             // If an error was encountered, keep going, but log it to the console.
