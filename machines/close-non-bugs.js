@@ -70,10 +70,10 @@ module.exports = {
     console.log('Cleaning up issues that have any of the following labels: ',inputs.nonIssueLabels);
 
     // For each label...
-    async.each(inputs.nonIssueLabels, function(nonIssueLabel, nextLabel) {
+    async.eachSeries(inputs.nonIssueLabels, function(nonIssueLabel, nextLabel) {
 
       // For each repo...
-      async.each(inputs.repos, function (repo, nextRepo){
+      async.eachSeries(inputs.repos, function (repo, nextRepo){
 
         // Fetch up to `inputs.maxNumIssuesToClosePerRepo` of the oldest
         // open issues in the repository.
@@ -151,7 +151,8 @@ module.exports = {
             }, function afterwards(err){
               // If a fatal error was encountered processing this repo, bail.
               // Otherwise, keep going.
-              return nextRepo(err);
+              // Use a 1-second delay to try and stay within Github rate limits
+              setTimeout(function(){return nextRepo(err);}, 1000);
             }); //</async.each(oldIssues) >
           }
         }); // </Github.searchIssues>

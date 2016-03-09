@@ -79,7 +79,7 @@ module.exports = {
       friendlyName: 'Grace period label',
       description: 'Label to use to indicate that an issue is in its grace period and will be closed soon',
       example: 'Waiting to close',
-      defaultsTo: 'Waiting to close'      
+      defaultsTo: 'Waiting to close'
     },
 
     gracePeriodComment: {
@@ -139,10 +139,15 @@ module.exports = {
     // Determine the event horizon for issue staleness (a JS timestamp)
     var lastUpdatedBefore = (new Date()).getTime() - inputs.shelfLifeInDays*86400000;
     var gracePeriodExpires = (new Date()).getTime() - inputs.gracePeriodInDays*86400000;
-    console.log('Cleaning up issues that haven\'t seen an update in %d days.',inputs.shelfLifeInDays);
+    if (inputs.gracePeriodInDays) {
+     console.log('Warning issues that haven\'t seen an update in %d days.',inputs.shelfLifeInDays);
+     console.log('Closing warned issues that haven\'t seen an update in %d days.',inputs.gracePeriodInDays);
+    } else {
+     console.log('Closing issues that haven\'t seen an update in %d days.',inputs.shelfLifeInDays);
+    }
 
     // For each repo...
-    async.each(inputs.repos, function (repo, next){
+    async.eachSeries(inputs.repos, function (repo, nextRepo){
 
       async.auto({
         findStale: function(done) {
@@ -159,7 +164,7 @@ module.exports = {
             error: function (err) {
               // If an error was encountered, keep going, but log it to the console.
               console.error('ERROR: Failed to search issues in "'+repo.owner+'/'+repo.repoName+'":\n',err);
-              return next();
+              return done();
             },
             success: function (oldIssues){
               console.log('Located at least %d old, open issues in "'+repo.owner+'/'+repo.repoName+'"...',oldIssues.length);
@@ -170,7 +175,7 @@ module.exports = {
               console.log('...and ' + (inputs.gracePeriodInDays ? 'warning' : 'closing') + ' the %d oldest ones.',oldIssues.length);
 
               // For each old issue...
-              async.each(oldIssues, function (oldIssue, next){
+              async.each(oldIssues, function (oldIssue, nextOldIssue){
 
                 // If there's no grace period, simply close the issue.
                 if (!inputs.gracePeriodInDays) {
@@ -183,7 +188,7 @@ module.exports = {
                     error: function (err){
                       // If an error was encountered, keep going, but log it to the console.
                       console.error('ERROR: Failed to comment+close issue #'+oldIssue.number+' in "'+repo.owner+'/'+repo.repoName+'":\n',err);
-                      return next();
+                      return nextOldIssue();
                     },
                     success: function (){
 
@@ -213,10 +218,10 @@ module.exports = {
                         error: function (err){
                           // If an error was encountered, keep going, but log it to the console.
                           console.error('ERROR: Failed to comment+close issue #'+oldIssue.number+' in "'+repo.owner+'/'+repo.repoName+'":\n',err);
-                          return next();
+                          return nextOldIssue();
                         },
                         success: function (newCommentId){
-                          return next();
+                          return nextOldIssue();
                         }
                       });//</Github.commentOnIssue>
                     }
@@ -283,21 +288,22 @@ module.exports = {
                       },
                       success: function (newCommentId){
                         return cb();
-                      }  
-                    });              
+                      }
+                    });
                   }]
-                }, next);
-                
+                }, nextOldIssue);
+
 
               }, function afterwards(err){
                 // If a fatal error was encountered processing this repo, bail.
                 // Otherwise, keep going.
-                return done(err);
-              }); //</async.each>
+                // Use a 1-second delay to try and stay within Github rate limits
+                return setTimeout(function(){done(err);}, 1000);
+              }); //</async.each(oldIssues)>
             }
           }); // </Github.searchIssues>
 
-        },
+        }, // </findStale>
         findGraceExpired: function(done) {
           if (!inputs.gracePeriodInDays) {
             return done();
@@ -324,7 +330,7 @@ module.exports = {
               console.log('...and closing the %d oldest ones.',oldIssues.length);
 
               // For each old issue...
-              async.each(oldIssues, function (oldIssue, nextIssue){
+              async.each(oldIssues, function (oldIssue, nextOldIssue){
                 async.parallel([
                   function removeLabel(cb) {
                     return Github.removeLabelFromIssue({
@@ -352,20 +358,22 @@ module.exports = {
                       }
                     });
                   }
-                ], nextIssue);
-              }, done);
+                ], nextOldIssue);
+              },
+              // Use a 1-second delay to try and stay within Github rate limits
+              function(){setTimeout(done, 1000);});
             }
           });
 
-        }
-      });
+        } // </findGraceExpired>
+      }, nextRepo); // </async.auto>
 
     }, function afterwards(err) {
       if (err) {
         return exits.error(err);
       }
       return exits.success();
-    }); //</async.each>
+    }); //</async.eachSeries(inputs.repos)>
 
   }
 };
