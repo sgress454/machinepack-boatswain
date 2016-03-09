@@ -85,6 +85,19 @@ module.exports = {
           credentials: inputs.credentials,
         }).exec({
           error: function (err) {
+            if (err.output && err.output.body && err.output.body.match(/API rate limit exceeded/)) {
+              try {
+                var headers = JSON.parse(err.output.headers);
+                var reset = headers["x-ratelimit-reset"];
+                inputs.repos.push(repo);
+                var delay = (reset * 1000) - ((new Date()).getTime());
+                console.log("Hit rate limit; pausing until", new Date(reset * 1000), "(" + delay + ")");
+                return setTimeout(done, delay);
+              } catch(e) {
+                console.log(e);
+                return done();
+              }
+            }            
             // If an error was encountered, keep going, but log it to the console.
             console.error('ERROR: Failed to search issues in "'+repo.owner+'/'+repo.repoName+'":\n',err);
             return nextRepo();
@@ -151,8 +164,7 @@ module.exports = {
             }, function afterwards(err){
               // If a fatal error was encountered processing this repo, bail.
               // Otherwise, keep going.
-              // Use a 1-second delay to try and stay within Github rate limits
-              setTimeout(function(){return nextRepo(err);}, 1000);
+              return nextRepo(err);
             }); //</async.each(oldIssues) >
           }
         }); // </Github.searchIssues>
