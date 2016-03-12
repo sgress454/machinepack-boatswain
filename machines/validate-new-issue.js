@@ -56,7 +56,19 @@ module.exports = {
       description: 'If `true`, issues not conforming to the template will be closed.',
       example: true,
       defaultsTo: false
-    } 
+    },
+    defaultMessageTemplate: {
+      friendlyName: 'Default Message Template',
+      description: 'Template of message to respond to new issues with if there is no issue template',
+      extendedDescription: 'Set to empty string to not send a default message',
+      example: 'A comment written in _GitHub-flavored markdown syntax_ and optionally taking advantage of <%- lodash.template.notation %>.',
+      defaultsTo: '@<%- issue.user.login %> Thanks for posting, we\'ll take a look as soon as possible.  In the meantime, if you haven’t already, please carefully read the [issue contribution guidelines](<%-contributionGuideUrl%>) and double-check for any missing information above.  In particular, please ensure that this issue is about a stability or performance bug with a  documented feature; and make sure you’ve included detailed instructions on how to reproduce the bug from a clean install.\n\nThank you!',
+    },
+    contributionGuideUrl: {
+      description: 'The URL to pass in as a local variable for use via lodash template syntax in `commentTemplate`.',
+      extendedDescription: 'If left unspecified, the URL will be built to automatically point at `CONTRIBUTING.md` in the top-level of the repo where the issue was posted.',
+      example: 'https://github.com/balderdashy/sails/blob/master/CONTRIBUTING.md'
+    }      
   },
 
 
@@ -93,7 +105,42 @@ module.exports = {
 
     Http.fetchWebpageHtml({url: issueTemplateUrl}).exec({
       // If there's no issue template, then there's no way to validate the issue, so let it pass
-      notFound: function(err) {return exits.success();},
+      notFound: function(err) {
+        // If there's no default message template, we're done
+        if (!inputs.defaultMessageTemplate) {
+          return exits.success();
+        }
+        // Otherwise attempt to post a message on the new issue
+        var comment;
+        try {
+          comment = _.template(inputs.defaultMessageTemplate)({
+            repo: repo,
+            issue: issue,
+            contributionGuideUrl: inputs.contributionGuideUrl || 'https://github.com/'+repo.owner.login+'/'+repo.name+'/blob/master/CONTRIBUTING.md'
+          });
+        }
+        catch (e) {
+          console.error('ERROR: Failed to comment on issue #'+oldIssue.number+' in "'+repo.owner.login+'/'+repo.name+'" because the comment template could not be rendered:\n',err);
+          return next();
+        }
+
+        // Now post a comment on the issue explaining what's happening.
+        require('machinepack-github').commentOnIssue({
+          owner: repo.owner.login,
+          repo: repo.name,
+          issueNumber: issue.number,
+          comment: comment,
+          credentials: inputs.credentials,
+        }).exec({
+          error: function (err){
+            // If an error was encountered, keep going, but log it to the console.
+            return exits.errorUpdatingIssue(err);
+          },
+          success: function (newCommentId){
+            return exits.success();
+          }
+        });//</Github.commentOnIssue>        
+      },
       error: function(err) {return exits.errorFetchingTemplate(err);},
       success: function(issueTemplateStr) {
         var issueTemplate = JSON.parse(issueTemplateStr);
