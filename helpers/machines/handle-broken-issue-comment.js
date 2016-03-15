@@ -50,7 +50,13 @@ module.exports = {
       extendedDescription: 'If this label is applied, then subsequent comments should trigger a webhook that will re-examine the initial comment for compliance with the repo\'s issue template (if any)',
       example: 'Needs cleanup',
       defaultsTo: 'Needs cleanup'      
-    },        
+    },     
+    closeDirtyIssues: {
+      friendlyName: 'Close dirty issues',
+      description: 'If `true`, issues not conforming to the template will be closed.',
+      example: true,
+      defaultsTo: false
+    }
   },
 
 
@@ -96,6 +102,7 @@ module.exports = {
         }).exec(cb);
       },
       closeIssue: ['addLabel', 'addComment', function(cb) {
+        if (!inputs.closeDirtyIssues) {return cb();}
         require('machinepack-github').closeIssue({
           owner: repo.owner.login,
           repo: repo.name,
