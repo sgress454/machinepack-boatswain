@@ -86,7 +86,7 @@ module.exports = {
     var pr = inputs.pr;
 
     // If the title doesn't contain a valid prefix, comment and close
-    if (!pr.title.match(/^\[(proposal|patch|implements #\d+|fixes #\d+)\]/)) {
+    if (!pr.title.match(/^\[(proposal|patch|implements #\d+|fixes #\d+)\]/i)) {
 
       var comment = 'Hi @' + pr.user.login+'!  It looks like your pull request title doesn&rsquo;t quite conform to our guidelines.  Please edit the title so that it starts with [proposal], [patch], [fixes #<issue number>],  or [implements #<other PR number>].  Once you\'ve fixed it, post a comment below (e.g. "ok, fixed!") and we\'ll take a look!';
       return async.auto({
