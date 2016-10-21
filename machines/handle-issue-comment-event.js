@@ -97,9 +97,11 @@ module.exports = {
           cleanupPRLabel: inputs.cleanupPRLabel,
           closeDirtyPRs: inputs.closeDirtyPRs
         }).exec(exits);
-      }
-    }
-
+      }//-•
+      
+      return exits.success();
+    }//</if pull request>
+    //
     else {
       // If the issue is open and has the "Waiting to close" label,
       // then remove that label
@@ -131,7 +133,7 @@ module.exports = {
         }).exec(exits);
       }
       return exits.success();
-    }
+    }//</else>
 
   },
 
