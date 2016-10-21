@@ -120,8 +120,7 @@ module.exports = {
           });
         }
         catch (e) {
-          console.error('ERROR: Failed to comment on issue #'+oldIssue.number+' in "'+repo.owner.login+'/'+repo.name+'" because the comment template could not be rendered:\n',err);
-          return next();
+          return exits.error(e);
         }
 
         // Now post a comment on the issue explaining what's happening.
@@ -143,7 +142,12 @@ module.exports = {
       },
       error: function(err) {return exits.errorFetchingTemplate(err);},
       success: function(issueTemplateStr) {
-        var issueTemplate = JSON.parse(issueTemplateStr);
+        var issueTemplate;
+        try {
+          issueTemplate = JSON.parse(issueTemplateStr);
+        } catch (e) {
+          return exits.error(e);
+        }
         // Now that we have the issue template, extract the pledge
         var pledge = (function() {
           var match = issueTemplate.match(/### BEGIN PLEDGE ###([^]+)### END PLEDGE ###/);
@@ -258,8 +262,8 @@ module.exports = {
             if (err) {return exits.errorUpdatingIssue(err);}
             return exits.success();
           });
-        }
-
+        } // </ if (missingVersionInfo.length || missingActionItems.length) >
+ 
         if (_.find(issue.labels, {name: inputs.cleanupIssueLabel})) {
           // Otherwise make sure the issue is opened and the "cleanup" label is removed
           async.auto({
@@ -284,7 +288,10 @@ module.exports = {
             if (err) {return exits.errorUpdatingIssue(err);}
             return exits.success();
           });
-        }
+        } // </_.find(issue.labels, {name: inputs.cleanupIssueLabel}) >
+
+        // The poster did everything right, so return silently!
+        return exits.success();
 
       }
     });
