@@ -52,7 +52,13 @@ module.exports = {
       description: 'The URL to pass in as a local variable for use via lodash template syntax in `commentTemplate`.',
       extendedDescription: 'If left unspecified, the URL will be built to automatically point at `CONTRIBUTING.md` in the top-level of the repo where the issue was posted.',
       example: 'https://github.com/balderdashy/sails/blob/master/CONTRIBUTING.md'
-    }    
+    },
+    ignoreUsers: {
+      friendlyName: 'Ignore users',
+      description: 'List of users to ignore issues from',
+      example: ['sailsbot'],
+      defaultsTo: []
+    }
   },
 
 
@@ -70,6 +76,10 @@ module.exports = {
 
     var async = require('async');
     var _ = require('lodash');
+
+    if (inputs.ignoreUsers.indexOf(inputs.event.sender.login) > -1) {
+      return exits.success();
+    }
 
     switch(inputs.event.action) {
       case 'opened':
