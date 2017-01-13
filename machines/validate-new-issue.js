@@ -62,7 +62,7 @@ module.exports = {
       description: 'Template of message to respond to new issues with if there is no issue template',
       extendedDescription: 'Set to empty string to not send a default message',
       example: 'A comment written in _GitHub-flavored markdown syntax_ and optionally taking advantage of <%- lodash.template.notation %>.',
-      defaultsTo: '@<%- issue.user.login %> Thanks for posting, we\'ll take a look as soon as possible.  In the meantime, if you haven’t already, please carefully read the [issue contribution guidelines](<%-contributionGuideUrl%>) and double-check for any missing information above.  In particular, please ensure that this issue is about a stability or performance bug with a  documented feature; and make sure you’ve included detailed instructions on how to reproduce the bug from a clean install.\n\nThank you!',
+      defaultsTo: '@<%- issue.user.login %> Thanks for posting, we\'ll take a look as soon as possible.  In the meantime, if you haven’t already, please carefully read the [issue contribution guidelines](<%-contributionGuideUrl%>) and double-check for any missing information above.  In particular, please ensure that this issue is about a stability or performance bug with a  documented feature; and make sure you’ve included detailed instructions on how to reproduce the bug from a clean install.\n\nThank you!\n\n> For help with questions about Sails, [click here](http://sailsjs.com/support).',
     },
     contributionGuideUrl: {
       description: 'The URL to pass in as a local variable for use via lodash template syntax in `commentTemplate`.',
@@ -228,7 +228,7 @@ module.exports = {
             });
             comment += "\nAs soon as those items are rectified, post a new comment (e.g. &ldquo;Ok, fixed!&rdquo;) below and we'll take a look.  Thanks!\n\n";
           }
-          comment += '*If you feel this message is in error, or you want to debate the merits of my existence (sniffle), please contact inquiries@treeline.io.*';
+          comment += '*If you feel this message is in error, or you want to debate the merits of my existence (sniffle), please contact inquiries@sailsjs.com';
           return async.auto({
             addLabel: function(cb) {
               require('machinepack-github').addLabelsToIssue({

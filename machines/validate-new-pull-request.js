@@ -150,7 +150,7 @@ module.exports = {
     }
 
     require('machinepack-github').commentOnIssue({
-      comment: "Thanks for posting, @"+pr.user.login+"!  We\'ll look into this ASAP.",
+      comment: "Thanks for posting, @"+pr.user.login+"!  We\'ll look into this ASAP.\n\n> For help with questions about Sails, [click here](http://sailsjs.com/support).",
       owner: repo.owner.login,
       repo: repo.name,
       issueNumber: pr.number,

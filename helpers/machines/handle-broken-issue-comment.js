@@ -81,7 +81,7 @@ module.exports = {
     comment += 'To re-open this issue, please copy the template from [here](https://raw.githubusercontent.com/'+repo.owner.login+'/'+repo.name+'/master/.github/ISSUE_TEMPLATE), paste it at the beginning of your initial comment, and follow the instructions in the text. ';
     comment += 'Then post a new comment (e.g. "ok, fixed!") so that I know to go back and check.\n\n';
     comment += 'Sorry to be a hassle, but following these instructions ensures that we can help you in the best way possible and keep the Sails project running smoothly.\n\n';
-    comment += '*If you feel this message is in error, or you want to debate the merits of my existence (sniffle), please contact inquiries@treeline.io.*';
+    comment += '*If you feel this message is in error, or you want to debate the merits of my existence (sniffle), please contact inquiries@sailsjs.com';
     return async.auto({
       addLabel: function(cb) {
         require('machinepack-github').addLabelsToIssue({
