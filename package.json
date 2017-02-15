@@ -1,6 +1,6 @@
 {
   "name": "machinepack-boatswain",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "description": "Machines for cleaning up Github issues",
   "main": "index.js",
   "scripts": {
