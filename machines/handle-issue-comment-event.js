@@ -49,7 +49,7 @@ module.exports = {
       friendlyName: 'Auto-removable label color',
       description: 'The hex color for labels which should be removed automatically whenever an issue gets a new comment',
       example: '009800',
-      defaults: '009800'
+      defaultsTo: '009800'
     },
     ignoreUsers: {
       friendlyName: 'Ignore users',
