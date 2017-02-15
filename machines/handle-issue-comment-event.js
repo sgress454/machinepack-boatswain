@@ -45,6 +45,12 @@ module.exports = {
       example: 'Waiting to close',
       defaultsTo: 'Waiting to close'
     },
+    autoRemovableLabelColor: {
+      friendlyName: 'Auto-removable label color',
+      description: 'The hex color for labels which should be removed automatically whenever an issue gets a new comment',
+      example: '009800',
+      defaults: '009800'
+    },
     ignoreUsers: {
       friendlyName: 'Ignore users',
       description: 'List of users to ignore comments from',
@@ -82,6 +88,9 @@ module.exports = {
     var async = require('async');
     var _ = require('lodash');
 
+    // Coerce hex color to not have #
+    var autoRemovableLabelColor = inputs.autoRemovableLabelColor.replace(/^#(.*)$/,'$1');
+
     if (inputs.ignoreUsers.indexOf(inputs.event.sender.login) > -1) {
       return exits.success();
     }
@@ -103,22 +112,32 @@ module.exports = {
     }//</if pull request>
     //
     else {
+      var labelNames = _.pluck(inputs.event.issue.labels, 'name');
+      var labelColors = _.pluck(inputs.event.issue.labels, 'color');
       // If the issue is open and has the "Waiting to close" label,
-      // then remove that label
-      if (inputs.event.issue.state == 'open' && _.find(inputs.event.issue.labels, {name: inputs.gracePeriodLabel})) {
-        return require('machinepack-github').removeLabelFromIssue({
-          owner: inputs.event.repository.owner.login,
-          repo: inputs.event.repository.name,
-          issueNumber: inputs.event.issue.number,
-          label: inputs.gracePeriodLabel,
-          credentials: inputs.credentials
-        }).exec({
-          error: function(err) {
-            return exits.error(err);
-          },
-          success: function(err) {
-            exits.success();
+      // or a label with the "auto-remove" color, then remove that label
+      if (inputs.event.issue.state == 'open' && (_.contains(labelNames, inputs.gracePeriodLabel) || _.contains(labelColors, autoRemovableLabelColor)) ) {
+        async.each(inputs.event.issue.labels, function(label, nextLabel) {
+          if (label.name === inputs.gracePeriodLabel || label.color === autoRemovableLabelColor) {
+            return require('machinepack-github').removeLabelFromIssue({
+              owner: inputs.event.repository.owner.login,
+              repo: inputs.event.repository.name,
+              issueNumber: inputs.event.issue.number,
+              label: label.name,
+              credentials: inputs.credentials
+            }).exec({
+              error: function(err) {
+                return nextLabel(err);
+              },
+              success: function(err) {
+                nextLabel();
+              }
+            });            
           }
+          return nextLabel();
+        }, function(err) {
+          if (err) {return exits.error(err);}
+          return exits.success();
         });
       }
       // If the issue has the "Needs cleanup" label,
