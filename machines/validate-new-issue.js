@@ -271,58 +271,62 @@ module.exports = {
           });
         } // </ if (missingVersionInfo.length || missingActionItems.length) >
  
-        if (_.find(issue.labels, {name: inputs.cleanupIssueLabel})) {
-          // Otherwise make sure the issue is opened and the "cleanup" label is removed
-          async.auto({
-            removeLabel: function(cb) {
-              require('machinepack-github').removeLabelFromIssue({
-                owner: repo.owner.login,
-                repo: repo.name,
-                issueNumber: issue.number,
-                label: inputs.cleanupIssueLabel,
-                credentials: inputs.credentials
-              }).exec(cb);
-            },
-            openIssue: function(cb) {
-              require('machinepack-github').reopenIssue({
-                owner: repo.owner.login,
-                repo: repo.name,
-                issueNumber: issue.number,
-                credentials: inputs.credentials
-              }).exec(cb);
-            },
-            addComment: function(cb) {
+        // Otherwise make sure the issue is opened and the "cleanup" label is removed,
+        // and add a "welcome" comment.
+        async.auto({
+          removeLabel: function(cb) {
+            // If there is no "clean up" label on the issue, skip this step.
+            if (_.find(issue.labels, {name: inputs.cleanupIssueLabel})) {
+              return cb();
+            }
+            require('machinepack-github').removeLabelFromIssue({
+              owner: repo.owner.login,
+              repo: repo.name,
+              issueNumber: issue.number,
+              label: inputs.cleanupIssueLabel,
+              credentials: inputs.credentials
+            }).exec(cb);
+          },
+          openIssue: function(cb) {
+            // If there is no "clean up" label on the issue, skip this step.
+            if (_.find(issue.labels, {name: inputs.cleanupIssueLabel})) {
+              return cb();
+            }
+            require('machinepack-github').reopenIssue({
+              owner: repo.owner.login,
+              repo: repo.name,
+              issueNumber: issue.number,
+              credentials: inputs.credentials
+            }).exec(cb);
+          },
+          addComment: function(cb) {
 
-              // Otherwise attempt to post a message on the new issue
-              var comment;
-              try {
-                comment = _.template(inputs.welcomeMessageTemplate)({
-                  repo: repo,
-                  issue: issue,
-                  contributionGuideUrl: inputs.contributionGuideUrl || 'https://github.com/'+repo.owner.login+'/'+repo.name+'/blob/master/CONTRIBUTING.md'
-                });
-              }
-              catch (e) {
-                return cb(e);
-              }
+            // Otherwise attempt to post a message on the new issue
+            var comment;
+            try {
+              comment = _.template(inputs.welcomeMessageTemplate)({
+                repo: repo,
+                issue: issue,
+                contributionGuideUrl: inputs.contributionGuideUrl || 'https://github.com/'+repo.owner.login+'/'+repo.name+'/blob/master/CONTRIBUTING.md'
+              });
+            }
+            catch (e) {
+              return cb(e);
+            }
 
-              require('machinepack-github').commentOnIssue({
-                comment: comment,
-                owner: repo.owner.login,
-                repo: repo.name,
-                issueNumber: issue.number,
-                credentials: inputs.credentials
-              }).exec(cb);
-            },
+            require('machinepack-github').commentOnIssue({
+              comment: comment,
+              owner: repo.owner.login,
+              repo: repo.name,
+              issueNumber: issue.number,
+              credentials: inputs.credentials
+            }).exec(cb);
+          },
 
-          }, function(err) {
-            if (err) {return exits.errorUpdatingIssue(err);}
-            return exits.success();
-          });
-        } // </_.find(issue.labels, {name: inputs.cleanupIssueLabel}) >
-
-        // The poster did everything right, so return silently!
-        return exits.success();
+        }, function(err) {
+          if (err) {return exits.errorUpdatingIssue(err);}
+          return exits.success();
+        });
 
       }
     });
