@@ -62,7 +62,14 @@ module.exports = {
       description: 'Template of message to respond to new issues with if there is no issue template',
       extendedDescription: 'Set to empty string to not send a default message',
       example: 'A comment written in _GitHub-flavored markdown syntax_ and optionally taking advantage of <%- lodash.template.notation %>.',
-      defaultsTo: '@<%- issue.user.login %> Thanks for posting, we\'ll take a look as soon as possible.  In the meantime, if you haven’t already, please carefully read the [issue contribution guidelines](<%-contributionGuideUrl%>) and double-check for any missing information above.  In particular, please ensure that this issue is about a stability or performance bug with a  documented feature; and make sure you’ve included detailed instructions on how to reproduce the bug from a clean install.\n\nThank you!\n\n> For help with questions about Sails, [click here](http://sailsjs.com/support).',
+      defaultsTo: '@<%- issue.user.login %> Thanks for posting, we\'ll take a look as soon as possible.  In the meantime, if you haven’t already, please carefully read the [issue contribution guidelines](<%-contributionGuideUrl%>) and double-check for any missing information above.  In particular, please ensure that this issue is about a stability or performance bug with a  documented feature; and make sure you’ve included detailed instructions on how to reproduce the bug from a clean install.\n\nThank you!\n\n> For help with questions about Sails, [click here](http://sailsjs.com/support).  If you&rsquo;re interested in hiring @sailsbot and her minions in Austin, [click here](http://sailsjs.com/studio).',
+    },
+    welcomeMessageTemplate: {
+      friendlyName: 'Welcome Message Template',
+      description: 'Template of message to respond to new issues with when the poster successfully navigates the issue template',
+      extendedDescription: 'Set to empty string to not send a default message',
+      example: 'A comment written in _GitHub-flavored markdown syntax_ and optionally taking advantage of <%- lodash.template.notation %>.',
+      defaultsTo: '@<%- issue.user.login %> Thanks for posting, we\'ll take a look as soon as possible.\n\n---\n\nFor help with questions about Sails, [click here](http://sailsjs.com/support).  If you&rsquo;re interested in hiring @sailsbot and her minions in Austin, [click here](http://sailsjs.com/studio).',
     },
     contributionGuideUrl: {
       description: 'The URL to pass in as a local variable for use via lodash template syntax in `commentTemplate`.',
@@ -283,7 +290,31 @@ module.exports = {
                 issueNumber: issue.number,
                 credentials: inputs.credentials
               }).exec(cb);
-            }
+            },
+            addComment: function(cb) {
+
+              // Otherwise attempt to post a message on the new issue
+              var comment;
+              try {
+                comment = _.template(inputs.welcomeMessageTemplate)({
+                  repo: repo,
+                  issue: issue,
+                  contributionGuideUrl: inputs.contributionGuideUrl || 'https://github.com/'+repo.owner.login+'/'+repo.name+'/blob/master/CONTRIBUTING.md'
+                });
+              }
+              catch (e) {
+                return cb(e);
+              }
+
+              require('machinepack-github').commentOnIssue({
+                comment: comment,
+                owner: repo.owner.login,
+                repo: repo.name,
+                issueNumber: issue.number,
+                credentials: inputs.credentials
+              }).exec(cb);
+            },
+
           }, function(err) {
             if (err) {return exits.errorUpdatingIssue(err);}
             return exits.success();
