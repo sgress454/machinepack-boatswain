@@ -276,7 +276,7 @@ module.exports = {
         async.auto({
           removeLabel: function(cb) {
             // If there is no "clean up" label on the issue, skip this step.
-            if (_.find(issue.labels, {name: inputs.cleanupIssueLabel})) {
+            if (!_.find(issue.labels, {name: inputs.cleanupIssueLabel})) {
               return cb();
             }
             require('machinepack-github').removeLabelFromIssue({
@@ -289,7 +289,7 @@ module.exports = {
           },
           openIssue: function(cb) {
             // If there is no "clean up" label on the issue, skip this step.
-            if (_.find(issue.labels, {name: inputs.cleanupIssueLabel})) {
+            if (!_.find(issue.labels, {name: inputs.cleanupIssueLabel})) {
               return cb();
             }
             require('machinepack-github').reopenIssue({
